@@ -824,35 +824,45 @@ chroot_distro_download() {
         fi
 
     elif [ "$1" = "void" ]; then
-        echo "[1] void linux 20210218"
-        echo "[2] void linux 20210316"
-        echo "[3] void linux 20210930"
-        echo "[4] void linux 20221001"
-        echo "[5] void linux 20230628"
-        echo "[6] void linux current"
+
+        url="https://repo-default.voidlinux.org/live/"
+
+        # Scrap the available rootfs versions from the Void Linux website
+        echo "Available Void Linux rootfs versions:"
+        # Use a temporary file instead of an array for compatibility
+        tmp_versions="/data/local/tmp/void_versions"
+        mkdir -p "$(dirname "$tmp_versions")"
+        wget -q -O - "$url" | grep -oP 'href="\d{8}/"' | sed 's/href="//' | sed 's/\/"//' >"$tmp_versions"
+
+        count=0
+        while IFS= read -r line; do
+            count=$((count + 1))
+            echo "$count) $line"
+        done <"$tmp_versions"
+
         while true; do
-            printf "Enter a number : "
-            read number
-            case "$number" in
-                1) rootfs="20210218";break;;
-                2) rootfs="20210316"; break;;
-                3) rootfs="20210930"; break;;
-                4) rootfs="20221001";break;;
-                5) rootfs="20230628"; break;;
-                6) rootfs="current"; break;;
-                *) echo "Unknown option : $number";;
-            esac
-        done
-        if [ ! -f "$chroot_distro_path/.rootfs/$1.tar.xz" ]; then
-            if [ "$rootfs" = "current" ]; then
-                wget -O "$chroot_distro_path/.rootfs/$1.tar.xz" "https://repo-default.voidlinux.org/live/$rootfs/void-$(echo $hardware_machine | sed s/arm64/aarch64/g | sed s/amd64/x86_64/g | sed s/i386/i686/g | sed s/armhf/armv7l/g)-ROOTFS-20230628.tar.xz"
+            # Prompt user for input
+            printf "Select a version: "
+            read rootfs
+
+            # Validate the input as a number within range
+            if echo "$rootfs" | grep -Eq '^[0-9]+$' && [ "$rootfs" -le "$count" ] && [ "$rootfs" -gt 0 ]; then
+                selected_version=$(sed -n "${rootfs}p" "$tmp_versions")
+                break
             else
-                wget -O "$chroot_distro_path/.rootfs/$1.tar.xz" "https://repo-default.voidlinux.org/live/$rootfs/void-$(echo $hardware_machine | sed s/arm64/aarch64/g | sed s/amd64/x86_64/g | sed s/i386/i686/g | sed s/armhf/armv7l/g)-ROOTFS-$rootfs.tar.xz"
+                echo "Invalid selection."
             fi
+        done
+
+        # Download the selected rootfs version
+        if [ ! -f "$chroot_distro_path/.rootfs/$1.tar.xz" ]; then
+            mkdir -p "$chroot_distro_path/.rootfs"
+            arch=$(echo "$hardware_machine" | sed s/arm64/aarch64/ | sed s/amd64/x86_64/ | sed s/i386/i686/ | sed s/armhf/armv7l/)
+            wget -O "$chroot_distro_path/.rootfs/$1.tar.xz" "$url$selected_version/$1-${arch}-ROOTFS-$selected_version.tar.xz"
             if [ $? -ne 0 ]; then
                 echo "Failed to download the Void Linux Rootfs."
-                rm $chroot_distro_path/.rootfs/$1.tar.xz
-                exit
+                rm "$chroot_distro_path/.rootfs/$1.tar.xz"
+                exit 1
             fi
         else
             echo "Already downloaded."
