@@ -40,11 +40,11 @@ elif [ -e /data/adb/modules/chroot-distro ]; then
         (
             module_prop=$(cat /data/adb/modules/chroot-distro/module.prop)
             echo "$module_prop" | while read -r row; do
-                field=$(echo "$row" | cut -d "=" -f 1 )
-                value=$(echo "$row" | cut -d "=" -f 2 )
+                field=$(echo "$row" | cut -d "=" -f 1)
+                value=$(echo "$row" | cut -d "=" -f 2)
                 case "$field" in
-                    version) echo "Version: $value" ;;
-                    versionCode) echo "Versioncode: $value" ;;
+                version) echo "Version: $value" ;;
+                versionCode) echo "Versioncode: $value" ;;
                 esac
             done
             echo "md5 hash: $hash"
@@ -61,7 +61,7 @@ if [ "" != "$check_env" ]; then
     echo "Toybox version: $(toybox --version)"
 fi
 
-busyboxpath="$(command -v busybox 2> /dev/null)"
+busyboxpath="$(command -v busybox 2>/dev/null)"
 # shellcheck disable=SC2181
 # need both ouput and error code thus needs indirect error checking
 if [ $? -ne 0 ]; then
@@ -75,7 +75,7 @@ if [ $? -ne 0 ]; then
             if [ "" = "$busyboxpath" ] && [ -f "$possiblepath" ]; then
                 busyboxpath="$possiblepath"
             fi
-        done;
+        done
     fi
     if [ "" = "$check_env" ] && [ "" = "$busyboxpath" ]; then
         echo "busybox not found, install Busybox for Android NDK and try again"
@@ -93,29 +93,29 @@ fi
 
 unsupported_busybox=''
 case "$busyboxpath" in
-    /bin/*) ;; # assume that it is ok (either old android, or linux), nothing to do
-    /system/*)
-        ndk_path=/system/xbin/busybox
-        if [ "$busyboxpath" != "$ndk_path" ] && [ -e "$ndk_path" ]; then
-            # force use of Busybox for Android NDK in the case there is conflicting versions
-            if [ "" != "$check_env" ]; then
-                echo "Forcing Busybox path from '$busyboxpath' to '$ndk_path'"
-                echo "Forced Busybox version: $($ndk_path | head -n1)"
-            fi
-            busyboxpath="$ndk_path"
+/bin/*) ;; # assume that it is ok (either old android, or linux), nothing to do
+/system/*)
+    ndk_path=/system/xbin/busybox
+    if [ "$busyboxpath" != "$ndk_path" ] && [ -e "$ndk_path" ]; then
+        # force use of Busybox for Android NDK in the case there is conflicting versions
+        if [ "" != "$check_env" ]; then
+            echo "Forcing Busybox path from '$busyboxpath' to '$ndk_path'"
+            echo "Forced Busybox version: $($ndk_path | head -n1)"
         fi
+        busyboxpath="$ndk_path"
+    fi
     ;;
-    /data/adb/modules/busybox-ndk/system/*) ;; # hidden Busybox for Android NDK, nothing to do
-    /data/adb/magisk/*) unsupported_busybox=true ;; # Magisk without Busybox for Android NDK installed
-    /usr/bin/*) ;; # running linux, assume that all is ok, nothing to do
-    /data/adb/ksu/bin/*) unsupported_busybox=true ;; # KernelSU without Busybox for Android NDK installed
-    /data/adb/ap/bin/*) unsupported_busybox=true ;; # APatch without Busybox for Android NDK installed
-    *)
-        if [ "" = "$check_env" ]; then
-            echo "busybox not found from the expected path, ensure that Busybox for Android NDK has been installed and try again"
-            echo "Run '$script env' for extra information"
-            exit 1
-        fi
+/data/adb/modules/busybox-ndk/system/*) ;;       # hidden Busybox for Android NDK, nothing to do
+/data/adb/magisk/*) unsupported_busybox=true ;;  # Magisk without Busybox for Android NDK installed
+/usr/bin/*) ;;                                   # running linux, assume that all is ok, nothing to do
+/data/adb/ksu/bin/*) unsupported_busybox=true ;; # KernelSU without Busybox for Android NDK installed
+/data/adb/ap/bin/*) unsupported_busybox=true ;;  # APatch without Busybox for Android NDK installed
+*)
+    if [ "" = "$check_env" ]; then
+        echo "busybox not found from the expected path, ensure that Busybox for Android NDK has been installed and try again"
+        echo "Run '$script env' for extra information"
+        exit 1
+    fi
     ;;
 esac
 
@@ -131,7 +131,7 @@ elif [ "/usr/bin" = "$busyboxdir" ]; then
     # would use full/normal chroot command, skip to ensure consistent test environment
     can_use_busyboxdir=''
 fi
-if [ "" != "$can_use_busyboxdir" ] &&  [ -e "$busyboxdir"/chroot ]; then
+if [ "" != "$can_use_busyboxdir" ] && [ -e "$busyboxdir"/chroot ]; then
     # Use chroot from the expected Busybox
     chrootpath="$(dirname "$busyboxpath")"/chroot
 elif [ -e /system/xbin/chroot ]; then
@@ -155,7 +155,7 @@ fi
 
 busyboxlsofcaller=''
 busyboxlsof=''
-if [ "" != "$busyboxpath" ] && "$busyboxpath" lsof > /dev/null 2>&1; then
+if [ "" != "$busyboxpath" ] && "$busyboxpath" lsof >/dev/null 2>&1; then
     # prefer the version provided by the found busybox binary
     busyboxlsofcaller=true
     busyboxlsof=true
@@ -179,7 +179,7 @@ busybox() { "$busyboxpath" "$@"; }
 # Toybox uname does not support -p
 uname() {
     if [ "" != "$busyboxpath" ]; then
-        busybox uname "$@";
+        busybox uname "$@"
     else
         # fall back to defaults to ensure at least some output
         uname -a
@@ -205,46 +205,46 @@ lsof() {
         # lsof is optional, no output
         :
     else
-        "$lsofpath";
+        "$lsofpath"
     fi
 }
 
 if [ "" != "$check_env" ]; then
     echo "chroot => '$chrootpath'"
     if [ "" = "$chrootpath" ]; then
-        echo "chroot found in PATH (but not used) => '$(command -v chroot 2> /dev/null)'"
+        echo "chroot found in PATH (but not used) => '$(command -v chroot 2>/dev/null)'"
     fi
     echo "lsof => '$lsofpath'"
     if [ "" = "$lsofpath" ]; then
-        echo "lsof found in PATH (but not used) => '$(command -v lsof 2> /dev/null)'"
+        echo "lsof found in PATH (but not used) => '$(command -v lsof 2>/dev/null)'"
     fi
     if [ ! -e /data/adb ]; then
         echo 'Could not determine the type of root solution installed'
     elif [ -e /data/adb/magisk ]; then
         case "$hardware_machine" in
-            *64)
-                if [ -e /data/adb/magisk/magisk64 ]; then
-                    magiskbin=/data/adb/magisk/magisk64
-                elif [ -e /data/adb/magisk/magisk ]; then
-                    magiskbin=/data/adb/magisk/magisk
-                fi
-                if [ "" != "$magiskbin" ]; then
-                    magisk_version=$($magiskbin -v)
-                else
-                    magisk_version=Unknown
-                fi
+        *64)
+            if [ -e /data/adb/magisk/magisk64 ]; then
+                magiskbin=/data/adb/magisk/magisk64
+            elif [ -e /data/adb/magisk/magisk ]; then
+                magiskbin=/data/adb/magisk/magisk
+            fi
+            if [ "" != "$magiskbin" ]; then
+                magisk_version=$($magiskbin -v)
+            else
+                magisk_version=Unknown
+            fi
             ;;
-            *)
-                if [ -e /data/adb/magisk/magisk32 ]; then
-                    magiskbin=/data/adb/magisk/magisk32
-                elif [ -e /data/adb/magisk/magisk ]; then
-                    magiskbin=/data/adb/magisk/magisk
-                fi
-                if [ "" != "$magiskbin" ]; then
-                    magisk_version=$($magiskbin -v)
-                else
-                    magisk_version=Unknown
-                fi
+        *)
+            if [ -e /data/adb/magisk/magisk32 ]; then
+                magiskbin=/data/adb/magisk/magisk32
+            elif [ -e /data/adb/magisk/magisk ]; then
+                magiskbin=/data/adb/magisk/magisk
+            fi
+            if [ "" != "$magiskbin" ]; then
+                magisk_version=$($magiskbin -v)
+            else
+                magisk_version=Unknown
+            fi
             ;;
         esac
         echo "Magisk installed ($magisk_version)"
@@ -260,10 +260,10 @@ if [ "" != "$check_env" ]; then
             if [ -d "$candidate" ]; then
                 dirname=$(basename "$candidate")
                 case "$dirname" in
-                    modules) ;; # not interested
-                    post-fs-data.d) ;; # not interested
-                    service.d) ;; # not interested
-                    *) echo "$dirname" ;;
+                modules) ;;        # not interested
+                post-fs-data.d) ;; # not interested
+                service.d) ;;      # not interested
+                *) echo "$dirname" ;;
                 esac
             fi
         done
@@ -287,7 +287,7 @@ if [ "" != "$check_env" ]; then
     exit 0
 fi
 
-getopt --test > /dev/null && true
+getopt --test >/dev/null && true
 if [ $? -ne 4 ]; then
     # shellcheck disable=SC2016
     echo 'I'\''m sorry, `getopt --test` failed in this environment.'
@@ -463,425 +463,189 @@ Rootfs : https://github.com/EXALAB/Anlinux-Resources/raw/master/Rootfs/CentOS_St
     fi
 }
 
-chroot_distro_download() {
-    if [ "$1" = "ubuntu" ]; then
-        if [ "$hardware_machine" = "i386" ] || [ "$hardware_machine" = "arm64" ] || [ "$hardware_machine" = "armhf" ] || [ "$hardware_machine" = "amd64" ]; then
-            echo "[1] ubuntu trusty 14.04.6"
-        fi
-        if [ "$hardware_machine" = "i386" ] || [ "$hardware_machine" = "arm64" ] || [ "$hardware_machine" = "armhf" ] || [ "$hardware_machine" = "amd64" ]; then
-            echo "[2] ubuntu xenial 16.04.6"
-        fi
-        if [ "$hardware_machine" = "i386" ] || [ "$hardware_machine" = "arm64" ] || [ "$hardware_machine" = "armhf" ] || [ "$hardware_machine" = "amd64" ]; then
-            echo "[3] ubuntu bionic 18.04.5"
-        fi
-        if [ "$hardware_machine" = "arm64" ] || [ "$hardware_machine" = "armhf" ] || [ "$hardware_machine" = "amd64" ]; then
-            echo "[4] ubuntu focal 20.04.5"
-        fi
-        if [ "$hardware_machine" = "arm64" ] || [ "$hardware_machine" = "armhf" ] || [ "$hardware_machine" = "amd64" ]; then
-            echo "[5] ubuntu jammy 22.04.4"
-        fi
-        if [ "$hardware_machine" = "arm64" ] || [ "$hardware_machine" = "armhf" ] || [ "$hardware_machine" = "amd64" ]; then
-            echo "[6] ubuntu noble 24.04.1"
-        fi
-        while true; do
-            printf "Enter a number : "
-            read number
-            case "$number" in
-                1) rootfs="trusty";rootfs_version="14.04.6"; break;;
-                2) rootfs="xenial";rootfs_version="16.04.6"; break;;
-                3) rootfs="bionic";rootfs_version="18.04.5"; break;;
-                4) rootfs="focal";rootfs_version="20.04.5"; break;;
-                5) rootfs="jammy";rootfs_version="22.04.4"; break;;
-                6) rootfs="noble";rootfs_version="24.04.1"; break;;
-                *) echo "Unknown option : $number";;
-            esac
-        done
-        if [ ! -f "$chroot_distro_path/.rootfs/$1.tar.xz" ]; then
-            wget -O "$chroot_distro_path/.rootfs/$1.tar.xz" "https://cdimage.ubuntu.com/ubuntu-base/releases/$rootfs/release/ubuntu-base-$rootfs_version-base-$hardware_machine.tar.gz"
-            if [ $? -ne 0 ]; then
-                echo "Failed to download the Ubuntu Rootfs."
-                rm $chroot_distro_path/.rootfs/$1.tar.xz
-                exit
-            fi
-        else
-            echo "Already downloaded."
-        fi
-
-    elif [ "$1" = "alpine" ]; then
-        echo "[1] alpine minirootfs 3.19.0"
-        echo "[2] alpine netboot 3.19.0"
-        echo "[3] alpine rpi 3.19.0"
-        echo "[4] alpine uboot 3.19.0"
-        while true; do
-            printf "Enter a number : "
-            read number
-            case "$number" in
-                1) rootfs="minirootfs";break;;
-                2) rootfs="netboot"; break;;
-                3) rootfs="rpi"; break;;
-                4) rootfs="uboot";break;;
-                *) echo "Unknown option : $number";;
-            esac
-        done
-        if [ ! -f "$chroot_distro_path/.rootfs/$1.tar.xz" ]; then
-            wget -O "$chroot_distro_path/.rootfs/$1.tar.xz" "http://dl-cdn.alpinelinux.org/alpine/latest-stable/releases/$(echo $hardware_machine | sed s/arm64/aarch64/g | sed s/amd64/x86_64/g | sed s/i386/x86/g)/alpine-$rootfs-3.19.0-$(echo $hardware_machine | sed s/arm64/aarch64/g | sed s/amd64/x86_64/g | sed s/i386/x86/g).tar.gz"
-            if [ $? -ne 0 ]; then
-                echo "Failed to download the Alpine Rootfs."
-                rm $chroot_distro_path/.rootfs/$1.tar.xz
-                exit
-            fi
-        else
-            echo "Already downloaded."
-        fi
-
-    elif [ "$1" = "kali" ]; then
-        echo "[1] kali linux full 2024.1"
-        echo "[2] kali linux minimal 2024.1"
-        echo "[3] kali linux nano 2024.1"
-        echo
-        echo "[4] kali linux full 2023.4"
-        echo "[5] kali linux minimal 2023.4"
-        echo "[6] kali linux nano 2023.4"
-        echo
-        echo "[7] kali linux full 2023.3b"
-        echo "[8] kali linux minimal 2023.3b"
-        echo "[9] kali linux nano 2023.3b"
-        echo
-        echo "[10] kali linux full 2023.3"
-        echo "[11] kali linux minimal 2023.3"
-        echo "[12] kali linux nano 2023.3"
-        echo
-        echo "[13] kali linux full current"
-        echo "[14] kali linux minimal current"
-        echo "[15] kali linux nano current"
-        while true; do
-            printf "Enter a number : "
-            read number
-            case "$number" in
-                1) rootfs="full";rootfs_version="kali-2024.1"; break;;
-                2) rootfs="minimal";rootfs_version="kali-2024.1"; break;;
-                3) rootfs="nano";rootfs_version="kali-2024.1"; break;;
-                4) rootfs="full";rootfs_version="kali-2023.4"; break;;
-                5) rootfs="minimal";rootfs_version="kali-2023.4"; break;;
-                6) rootfs="nano";rootfs_version="kali-2023.4"; break;;
-                7) rootfs="full";rootfs_version="kali-2023.3b"; break;;
-                8) rootfs="minimal";rootfs_version="kali-2023.3b"; break;;
-                9) rootfs="nano";rootfs_version="kali-2023.3b"; break;;
-                10) rootfs="full";rootfs_version="kali-2023.3"; break;;
-                11) rootfs="minimal";rootfs_version="kali-2023.3"; break;;
-                12) rootfs="nano";rootfs_version="kali-2023.3"; break;;
-                13) rootfs="full";rootfs_version="current"; break;;
-                14) rootfs="minimal";rootfs_version="current"; break;;
-                15) rootfs="nano";rootfs_version="current"; break;;
-                *) echo "Unknown option : $number";;
-            esac
-        done
-        if [ ! -f "$chroot_distro_path/.rootfs/$1.tar.xz" ]; then
-            wget -O "$chroot_distro_path/.rootfs/$1.tar.xz" "http://kali.download/nethunter-images/$rootfs_version/rootfs/kalifs-$hardware_machine-$rootfs.tar.xz"
-            if [ $? -ne 0 ]; then
-                echo "Failed to download the Kali Linux Rootfs."
-                rm $chroot_distro_path/.rootfs/$1.tar.xz
-                exit
-            fi
-        else
-            echo "Already downloaded."
-        fi
-
-    elif [ "$1" = "debian" ]; then
-        echo "[1] Debian"
-        echo "[2] Debian bullseye"
-        echo "[3] Debian bookworm"
-        while true; do
-            printf "Enter a number : "
-            read number
-            case "$number" in
-                1) rootfs="debian"; break;;
-                2) rootfs="debian_bullseye"; break;;
-                3) rootfs="debian_bookworm";break;;
-                *) echo "Unknown option : $number";;
-            esac
-        done
-
-        if [ ! -f "$chroot_distro_path/.rootfs/$1.tar.xz" ]; then
-            if [ $rootfs = "debian" ]; then
-                wget -O "$chroot_distro_path/.rootfs/$1.tar.xz" "https://github.com/EXALAB/Anlinux-Resources/raw/master/Rootfs/Debian/$hardware_machine/debian-rootfs-$hardware_machine.tar.xz"
-            elif [ $rootfs = "debian_bullseye" ]; then
-                wget -O "$chroot_distro_path/.rootfs/$1.tar.xz" "https://github.com/termux/proot-distro/releases/download/v4.7.0/debian-bullseye-$(echo $hardware_machine | sed s/arm64/aarch64/g | sed s/amd64/x86_64/g | sed s/i386/i686/g | sed s/armhf/arm/g)-pd-v4.7.0.tar.xz"
-            elif [ $rootfs = "debian_bookworm" ]; then
-                wget -O "$chroot_distro_path/.rootfs/$1.tar.xz" "https://github.com/termux/proot-distro/releases/download/v4.7.0/debian-bookworm-$(echo $hardware_machine | sed s/arm64/aarch64/g | sed s/amd64/x86_64/g | sed s/i386/i686/g | sed s/armhf/arm/g)-pd-v4.7.0.tar.xz"
-            fi
-
-            if [ $? -ne 0 ]; then
-                echo "Failed to download the Debian Rootfs."
-                rm $chroot_distro_path/.rootfs/$1.tar.xz
-                exit
-            fi
-        else
-            echo "Already downloaded."
-        fi
-
-    elif [ "$1" = "parrot" ]; then
-        if [ ! -f "$chroot_distro_path/.rootfs/$1.tar.xz" ]; then
-            wget -O "$chroot_distro_path/.rootfs/$1.tar.xz" "https://github.com/EXALAB/Anlinux-Resources/raw/master/Rootfs/Parrot/$hardware_machine/parrot-rootfs-$hardware_machine.tar.xz"
-            if [ $? -ne 0 ]; then
-                echo "Failed to download the Parrot OS Rootfs."
-                rm $chroot_distro_path/.rootfs/$1.tar.xz
-                exit
-            fi
-        else
-            echo "Already downloaded."
-        fi
-
-    elif [ "$1" = "archlinux" ]; then
-        if [ ! -f "$chroot_distro_path/.rootfs/$1.tar.xz" ]; then
-            if [ "$hardware_machine" = "armhf" ]; then
-                wget -O "$chroot_distro_path/.rootfs/$1.tar.xz" "http://ca.us.mirror.archlinuxarm.org/os/ArchLinuxARM-armv7-latest.tar.gz"
-            elif [ "$hardware_machine" = "arm64" ]; then
-                wget -O "$chroot_distro_path/.rootfs/$1.tar.xz" "http://ca.us.mirror.archlinuxarm.org/os/ArchLinuxARM-aarch64-latest.tar.gz"
-            elif [ "$hardware_machine" = "amd64" ]; then
-                wget -O "$chroot_distro_path/.rootfs/$1.tar.xz" "https://mirrors.ocf.berkeley.edu/archlinux/iso/latest/archlinux-bootstrap-x86_64.tar.gz"
-            else
-                echo "Unsupported machine hardware: $(uname -m)"
-                exit
-            fi
-            if [ $? -ne 0 ]; then
-                echo "Failed to download the Arch Linux Rootfs."
-                rm $chroot_distro_path/.rootfs/$1.tar.xz
-                exit
-            fi
-        else
-            echo "Already downloaded."
-        fi
-
-    elif [ "$1" = "artix" ]; then
-        if [ ! -f "$chroot_distro_path/.rootfs/$1.tar.xz" ]; then
-            if [ "$hardware_machine" = "arm64" ]; then
-                wget -O "$chroot_distro_path/.rootfs/$1.tar.xz" "https://github.com/termux/proot-distro/releases/download/v4.6.0/artix-aarch64-pd-v4.6.0.tar.xz"
-            else
-                echo "Unsupported machine hardware: $(uname -m)"
-                exit
-            fi
-            if [ $? -ne 0 ]; then
-                echo "Failed to download the Artix Linux Rootfs."
-                rm $chroot_distro_path/.rootfs/$1.tar.xz
-                exit
-            fi
-        else
-            echo "Already downloaded."
-        fi
-
-    elif [ "$1" = "deepin" ]; then
-        if [ ! -f "$chroot_distro_path/.rootfs/$1.tar.xz" ]; then
-            if [ "$hardware_machine" = "arm64" ]; then
-                wget -O "$chroot_distro_path/.rootfs/$1.tar.xz" "https://github.com/termux/proot-distro/releases/download/v4.6.0/artix-aarch64-pd-v4.6.0.tar.xz"
-            elif [ "$hardware_machine" = "amd64" ]; then
-                wget -O "$chroot_distro_path/.rootfs/$1.tar.xz" "https://github.com/termux/proot-distro/releases/download/v4.6.0/artix-x86_64-pd-v4.6.0.tar.xz"
-            else
-                echo "Unsupported machine hardware: $(uname -m)"
-                exit
-            fi
-            if [ $? -ne 0 ]; then
-                echo "Failed to download the Deepin Rootfs."
-                rm $chroot_distro_path/.rootfs/$1.tar.xz
-                exit
-            fi
-        else
-            echo "Already downloaded."
-        fi
-
-    elif [ "$1" = "fedora" ]; then
-        if [ ! -f "$chroot_distro_path/.rootfs/$1.tar.xz" ]; then
-            if [ "$hardware_machine" = "arm64" ]; then
-                wget -O "$chroot_distro_path/.rootfs/$1.tar.xz" "https://github.com/termux/proot-distro/releases/download/v4.6.0/fedora-aarch64-pd-v4.6.0.tar.xz"
-            elif [ "$hardware_machine" = "amd64" ]; then
-                wget -O "$chroot_distro_path/.rootfs/$1.tar.xz" "https://github.com/termux/proot-distro/releases/download/v4.6.0/fedora-x86_64-pd-v4.6.0.tar.xz"
-            else
-                echo "Unsupported machine hardware: $(uname -m)"
-                exit
-            fi
-            if [ $? -ne 0 ]; then
-                echo "Failed to download the Fedora Rootfs."
-                rm $chroot_distro_path/.rootfs/$1.tar.xz
-                exit
-            fi
-        else
-            echo "Already downloaded."
-        fi
-
-    elif [ "$1" = "openkylin" ]; then
-        if [ ! -f "$chroot_distro_path/.rootfs/$1.tar.xz" ]; then
-            if [ "$hardware_machine" = "arm64" ]; then
-                wget -O "$chroot_distro_path/.rootfs/$1.tar.xz" "https://github.com/termux/proot-distro/releases/download/v4.6.0/openkylin-aarch64-pd-v4.6.0.tar.xz"
-            elif [ "$hardware_machine" = "amd64" ]; then
-                wget -O "$chroot_distro_path/.rootfs/$1.tar.xz" "https://github.com/termux/proot-distro/releases/download/v4.6.0/openkylin-x86_64-pd-v4.6.0.tar.xz"
-            else
-                echo "Unsupported machine hardware: $(uname -m)"
-                exit
-            fi
-            if [ $? -ne 0 ]; then
-                echo "Failed to download the OpenKylin Rootfs."
-                rm $chroot_distro_path/.rootfs/$1.tar.xz
-                exit
-            fi
-        else
-            echo "Already downloaded."
-        fi
-
-    elif [ "$1" = "manjaro" ]; then
-        if [ ! -f "$chroot_distro_path/.rootfs/$1.tar.xz" ]; then
-            if [ "$hardware_machine" = "arm64" ]; then
-                wget -O "$chroot_distro_path/.rootfs/$1.tar.xz" "https://github.com/termux/proot-distro/releases/download/v4.6.0/manjaro-aarch64-pd-v4.6.0.tar.xz"
-            else
-                echo "Unsupported machine hardware: $(uname -m)"
-                exit
-            fi
-            if [ $? -ne 0 ]; then
-                echo "Failed to download the Manjaro Rootfs."
-                rm $chroot_distro_path/.rootfs/$1.tar.xz
-                exit
-            fi
-        else
-            echo "Already downloaded."
-        fi
-
-    elif [ "$1" = "opensuse" ]; then
-        if [ ! -f "$chroot_distro_path/.rootfs/$1.tar.xz" ]; then
-            wget -O "$chroot_distro_path/.rootfs/$1.tar.xz" "https://github.com/termux/proot-distro/releases/download/v4.6.0/opensuse-$(echo $hardware_machine | sed s/arm64/aarch64/g | sed s/amd64/x86_64/g | sed s/i386/i686/g | sed s/armhf/arm/g)-pd-v4.6.0.tar.xz"
-            if [ $? -ne 0 ]; then
-                echo "Failed to download the OpenSuse Rootfs."
-                rm $chroot_distro_path/.rootfs/$1.tar.xz
-                exit
-            fi
-        else
-            echo "Already downloaded."
-        fi
-
-    elif [ "$1" = "pardus" ]; then
-        if [ ! -f "$chroot_distro_path/.rootfs/$1.tar.xz" ]; then
-            if [ "$hardware_machine" != "armhf" ]; then
-                wget -O "$chroot_distro_path/.rootfs/$1.tar.xz" "https://github.com/termux/proot-distro/releases/download/v4.6.0/pardus-$(echo $hardware_machine | sed s/arm64/aarch64/g | sed s/amd64/x86_64/g | sed s/i386/i686/g | sed s/armhf/arm/g)-pd-v4.6.0.tar.xz"
-            else
-                echo "Unsupported machine hardware: $(uname -m)"
-                exit
-            fi
-            if [ $? -ne 0 ]; then
-                echo "Failed to download the Pardus Rootfs."
-                rm $chroot_distro_path/.rootfs/$1.tar.xz
-                exit
-            fi
-        else
-            echo "Already downloaded."
-        fi
-
-    elif [ "$1" = "backbox" ]; then
-        if [ ! -f "$chroot_distro_path/.rootfs/$1.tar.xz" ]; then
-            wget -O "$chroot_distro_path/.rootfs/$1.tar.xz" "https://github.com/EXALAB/Anlinux-Resources/raw/master/Rootfs/BackBox/$hardware_machine/backbox-rootfs-$hardware_machine.tar.xz"
-            if [ $? -ne 0 ]; then
-                echo "Failed to download the BackBox Rootfs."
-                rm $chroot_distro_path/.rootfs/$1.tar.xz
-                exit
-            fi
-        else
-            echo "Already downloaded."
-        fi
-
-    elif [ "$1" = "centos" ]; then
-        if [ ! -f "$chroot_distro_path/.rootfs/$1.tar.xz" ]; then
-            if [ "$hardware_machine" = "arm64" ]; then
-                wget -O "$chroot_distro_path/.rootfs/$1.tar.xz" "https://github.com/EXALAB/Anlinux-Resources/raw/master/Rootfs/CentOS/arm64/centos-rootfs-arm64.tar.xz"
-            elif [ "$hardware_machine" = "amd64" ]; then
-                wget -O "$chroot_distro_path/.rootfs/$1.tar.xz" "https://github.com/EXALAB/Anlinux-Resources/raw/master/Rootfs/CentOS/amd64/centos-rootfs-amd64.tar.xz"
-            else
-                echo "Unsupported machine hardware: $(uname -m)"
-                exit
-            fi
-            if [ $? -ne 0 ]; then
-                echo "Failed to download the CentOS Rootfs."
-                rm $chroot_distro_path/.rootfs/$1.tar.xz
-                exit
-            fi
-        else
-            echo "Already downloaded."
-        fi
-
-    elif [ "$1" = "centos_stream" ]; then
-        if [ ! -f "$chroot_distro_path/.rootfs/$1.tar.xz" ]; then
-            if [ "$hardware_machine" = "arm64" ]; then
-                wget -O "$chroot_distro_path/.rootfs/$1.tar.xz" "https://github.com/EXALAB/Anlinux-Resources/raw/master/Rootfs/CentOS_Stream/arm64/centos_stream-rootfs-arm64.tar.xz"
-            elif [ "$hardware_machine" = "amd64" ]; then
-                wget -O "$chroot_distro_path/.rootfs/$1.tar.xz" "https://github.com/EXALAB/Anlinux-Resources/raw/master/Rootfs/CentOS_Stream/amd64/centos_stream-rootfs-amd64.tar.xz"
-            else
-                echo "Unsupported machine hardware: $(uname -m)"
-                exit
-            fi
-            if [ $? -ne 0 ]; then
-                echo "Failed to download the CentOS Stream Rootfs."
-                rm $chroot_distro_path/.rootfs/$1.tar.xz
-                exit
-            fi
-        else
-            echo "Already downloaded."
-        fi
-
-    elif [ "$1" = "void" ]; then
-
+chroot_distro_scrape_versions() {
+    distro=$1
+    hardware=$(uname -m)
+    case "$distro" in
+    ubuntu)
+        url="https://cdimage.ubuntu.com/ubuntu-base/releases/"
+        versions=$(curl -s $url | grep -oP 'href="\K[0-9]+\.[0-9]+(?=/")' | sort -V)
+        ;;
+    alpine)
+        url="https://dl-cdn.alpinelinux.org/alpine/latest-stable/releases/$hardware/latest-releases.yaml"
+        versions=$(curl -s $url | awk '/version:/ {version=$2} /file:/ {file=$2} /date:/ {date=$2} /time:/ {time=$2; printf "Version: %s, File: %s, Date: %s, Time: %s\n", version, file, date, time}}' | sort -V)
+        ;;
+    kali)
+        url="http://kali.download/nethunter-images/"
+        versions=$(curl -s $url | grep -oP 'href="\K[0-9]+\.[0-9]+(?=/")' | sort -V)
+        ;;
+    debian)
+        url="https://github.com/EXALAB/Anlinux-Resources/raw/master/Rootfs/Debian/"
+        versions=$(curl -s $url | grep -oP 'href="\K[0-9]+\.[0-9]+(?=/")' | sort -V)
+        ;;
+    parrot)
+        url="https://github.com/EXALAB/Anlinux-Resources/raw/master/Rootfs/Parrot/"
+        versions=$(curl -s $url | grep -oP 'href="\K[0-9]+\.[0-9]+(?=/")' | sort -V)
+        ;;
+    archlinux)
+        url="http://ca.us.mirror.archlinuxarm.org/os/"
+        versions=$(curl -s $url | grep -oP 'href="\K[0-9]{4}\.[0-9]{2}\.[0-9]{2}(?=/")' | sort -V)
+        ;;
+    artix)
+        url="https://github.com/termux/proot-distro/releases/download/v4.6.0/"
+        versions=$(curl -s $url | grep -oP 'href="\Kv[0-9]+\.[0-9]+\.[0-9]+(?=/")' | sort -V)
+        ;;
+    deepin)
+        url="https://github.com/termux/proot-distro/releases/download/v4.6.0/"
+        versions=$(curl -s $url | grep -oP 'href="\Kv[0-9]+\.[0-9]+\.[0-9]+(?=/")' | sort -V)
+        ;;
+    fedora)
+        url="https://github.com/termux/proot-distro/releases/download/v4.6.0/"
+        versions=$(curl -s $url | grep -oP 'href="\Kv[0-9]+\.[0-9]+\.[0-9]+(?=/")' | sort -V)
+        ;;
+    manjaro)
+        url="https://github.com/termux/proot-distro/releases/download/v4.6.0/"
+        versions=$(curl -s $url | grep -oP 'href="\Kv[0-9]+\.[0-9]+\.[0-9]+(?=/")' | sort -V)
+        ;;
+    openkylin)
+        url="https://github.com/termux/proot-distro/releases/download/v4.6.0/"
+        versions=$(curl -s $url | grep -oP 'href="\Kv[0-9]+\.[0-9]+\.[0-9]+(?=/")' | sort -V)
+        ;;
+    opensuse)
+        url="https://github.com/termux/proot-distro/releases/download/v4.6.0/"
+        versions=$(curl -s $url | grep -oP 'href="\Kv[0-9]+\.[0-9]+\.[0-9]+(?=/")' | sort -V)
+        ;;
+    pardus)
+        url="https://github.com/termux/proot-distro/releases/download/v4.6.0/"
+        versions=$(curl -s $url | grep -oP 'href="\Kv[0-9]+\.[0-9]+\.[0-9]+(?=/")' | sort -V)
+        ;;
+    backbox)
+        url="https://github.com/EXALAB/Anlinux-Resources/raw/master/Rootfs/BackBox/"
+        versions=$(curl -s $url | grep -oP 'href="\K[0-9]+\.[0-9]+(?=/")' | sort -V)
+        ;;
+    centos)
+        url="https://github.com/EXALAB/Anlinux-Resources/raw/master/Rootfs/CentOS/"
+        versions=$(curl -s $url | grep -oP 'href="\K[0-9]+\.[0-9]+(?=/")' | sort -V)
+        ;;
+    centos_stream)
+        url="https://github.com/EXALAB/Anlinux-Resources/raw/master/Rootfs/CentOS_Stream/"
+        versions=$(curl -s $url | grep -oP 'href="\K[0-9]+\.[0-9]+(?=/")' | sort -V)
+        ;;
+    void)
         url="https://repo-default.voidlinux.org/live/"
+        versions=$(curl -s $url | grep -oP 'href="\K[0-9]{8}(?=/")' | sort -V)
+        ;;
+    *)
+        versions="Unknown"
+        ;;
+    esac
+    echo "$versions"
+}
 
-        # Scrap the available rootfs versions from the Void Linux website
-        echo "Available Void Linux rootfs versions:"
-        # Use a temporary file instead of an array for compatibility
-        tmp_versions="/data/local/tmp/void_versions"
-        mkdir -p "$(dirname "$tmp_versions")"
-        wget -q -O - "$url" | grep -oP 'href="\d{8}/"' | sed 's/href="//' | sed 's/\/"//' >"$tmp_versions"
+chroot_distro_download() {
+    distro=$1
+    versions=$(chroot_distro_scrape_versions "$distro")
+    if [ "$versions" = "Unknown" ]; then
+        echo "Unsupported distro: $distro"
+        exit 1
+    fi
 
-        count=0
-        while IFS= read -r line; do
-            count=$((count + 1))
-            echo "$count) $line"
-        done <"$tmp_versions"
+    echo "Available $distro versions:"
+    count=0
+    for version in $versions; do
+        count=$((count + 1))
+        echo "[$count] $version"
+    done
 
-        while true; do
-            # Prompt user for input
-            printf "Select a version: "
-            read rootfs
-
-            # Validate the input as a number within range
-            if echo "$rootfs" | grep -Eq '^[0-9]+$' && [ "$rootfs" -le "$count" ] && [ "$rootfs" -gt 0 ]; then
-                selected_version=$(sed -n "${rootfs}p" "$tmp_versions")
-                break
-            else
-                echo "Invalid selection."
-            fi
-        done
-
-        # Download the selected rootfs version
-        if [ ! -f "$chroot_distro_path/.rootfs/$1.tar.xz" ]; then
-            mkdir -p "$chroot_distro_path/.rootfs"
-            arch=$(echo "$hardware_machine" | sed s/arm64/aarch64/ | sed s/amd64/x86_64/ | sed s/i386/i686/ | sed s/armhf/armv7l/)
-            wget -O "$chroot_distro_path/.rootfs/$1.tar.xz" "$url$selected_version/$1-${arch}-ROOTFS-$selected_version.tar.xz"
-            if [ $? -ne 0 ]; then
-                echo "Failed to download the Void Linux Rootfs."
-                rm "$chroot_distro_path/.rootfs/$1.tar.xz"
-                exit 1
-            fi
+    while true; do
+        printf "Enter a number: "
+        read number
+        if [ "$number" -le "$count" ] && [ "$number" -gt 0 ]; then
+            selected_version=$(echo "$versions" | sed http://kali.download/nethunter-images/ -n "${number}p")
+            break
         else
-            echo "Already downloaded."
+            echo "Invalid selection."
+        fi
+    done
+
+    if [ ! -f "$chroot_distro_path/.rootfs/$distro.tar.xz" ]; then
+        case "$distro" in
+        ubuntu)
+            wget -O "$chroot_distro_path/.rootfs/$distro.tar.xz" "https://cdimage.ubuntu.com/ubuntu-base/releases/$selected_version/release/ubuntu-base-$selected_version-base-$hardware_machine.tar.gz"
+            ;;
+        alpine)
+            wget -O "$chroot_distro_path/.rootfs/$distro.tar.xz" "http://dl-cdn.alpinelinux.org/alpine/latest-stable/releases/$(echo $hardware_machine | sed s/arm64/aarch64/g | sed s/amd64/x86_64/g | sed s/i386/x86/g)/alpine-minirootfs-$selected_version-$(echo $hardware_machine | sed s/arm64/aarch64/g | sed s/amd64/x86_64/g | sed s/i386/x86/g).tar.gz"
+            ;;
+        kali)
+            wget -O "$chroot_distro_path/.rootfs/$distro.tar.xz" "http://kali.download/nethunter-images/$selected_version/rootfs/kalifs-$hardware_machine-full.tar.xz"
+            ;;
+        debian)
+            wget -O "$chroot_distro_path/.rootfs/$distro.tar.xz" "https://github.com/EXALAB/Anlinux-Resources/raw/master/Rootfs/Debian/$hardware_machine/debian-rootfs-$hardware_machine.tar.xz"
+            ;;
+        parrot)
+            wget -O "$chroot_distro_path/.rootfs/$distro.tar.xz" "https://github.com/EXALAB/Anlinux-Resources/raw/master/Rootfs/Parrot/$hardware_machine/parrot-rootfs-$hardware_machine.tar.xz"
+            ;;
+        archlinux)
+            wget -O "$chroot_distro_path/.rootfs/$distro.tar.xz" "http://ca.us.mirror.archlinuxarm.org/os/ArchLinuxARM-$hardware_machine-latest.tar.gz"
+            ;;
+        artix)
+            wget -O "$chroot_distro_path/.rootfs/$distro.tar.xz" "https://github.com/termux/proot-distro/releases/download/v4.6.0/artix-$hardware_machine-pd-v4.6.0.tar.xz"
+            ;;
+        deepin)
+            wget -O "$chroot_distro_path/.rootfs/$distro.tar.xz" "https://github.com/termux/proot-distro/releases/download/v4.6.0/deepin-$hardware_machine-pd-v4.6.0.tar.xz"
+            ;;
+        fedora)
+            wget -O "$chroot_distro_path/.rootfs/$distro.tar.xz" "https://github.com/termux/proot-distro/releases/download/v4.6.0/fedora-$hardware_machine-pd-v4.6.0.tar.xz"
+            ;;
+        manjaro)
+            wget -O "$chroot_distro_path/.rootfs/$distro.tar.xz" "https://github.com/termux/proot-distro/releases/download/v4.6.0/manjaro-$hardware_machine-pd-v4.6.0.tar.xz"
+            ;;
+        openkylin)
+            wget -O "$chroot_distro_path/.rootfs/$distro.tar.xz" "https://github.com/termux/proot-distro/releases/download/v4.6.0/openkylin-$hardware_machine-pd-v4.6.0.tar.xz"
+            ;;
+        opensuse)
+            wget -O "$chroot_distro_path/.rootfs/$distro.tar.xz" "https://github.com/termux/proot-distro/releases/download/v4.6.0/opensuse-$hardware_machine-pd-v4.6.0.tar.xz"
+            ;;
+        pardus)
+            wget -O "$chroot_distro_path/.rootfs/$distro.tar.xz" "https://github.com/termux/proot-distro/releases/download/v4.6.0/pardus-$hardware_machine-pd-v4.6.0.tar.xz"
+            ;;
+        backbox)
+            wget -O "$chroot_distro_path/.rootfs/$distro.tar.xz" "https://github.com/EXALAB/Anlinux-Resources/raw/master/Rootfs/BackBox/$hardware_machine/backbox-rootfs-$hardware_machine.tar.xz"
+            ;;
+        centos)
+            wget -O "$chroot_distro_path/.rootfs/$distro.tar.xz" "https://github.com/EXALAB/Anlinux-Resources/raw/master/Rootfs/CentOS/$hardware_machine/centos-rootfs-$hardware_machine.tar.xz"
+            ;;
+        centos_stream)
+            wget -O "$chroot_distro_path/.rootfs/$distro.tar.xz" "https://github.com/EXALAB/Anlinux-Resources/raw/master/Rootfs/CentOS_Stream/$hardware_machine/centos_stream-rootfs-$hardware_machine.tar.xz"
+            ;;
+        void)
+            wget -O "$chroot_distro_path/.rootfs/$distro.tar.xz" "https://repo-default.voidlinux.org/live/$selected_version/$distro-${hardware_machine}-ROOTFS-$selected_version.tar.xz"
+            ;;
+        *)
+            echo "Unsupported distro: $distro"
+            exit 1
+            ;;
+        esac
+        if [ $? -ne 0 ]; then
+            echo "Failed to download the $distro Rootfs."
+            rm "$chroot_distro_path/.rootfs/$distro.tar.xz"
+            exit 1
         fi
     else
-        echo "Unavailable distro: $1"
+        echo "Already downloaded."
     fi
 }
 
 chroot_distro_check_if_supported() {
     echo "$1" | tr ' ' '\n' | while read -r distro; do
         if [ "$distro" = "$2" ]; then
-            return 99;
+            return 99
         fi
     done
     if [ $? -eq 99 ]; then
-        return 0;
+        return 0
     else
-        return 1;
+        return 1
     fi
 }
 
@@ -926,26 +690,27 @@ chroot_distro_output_system_mount_point_paths() {
     storage_paths=$(
         for file in "/storage"/*; do
             echo "$distro_path$file"
-        done)
+        done
+    )
     while read -r path_to_test; do
         case "$path_to_test" in
-            *"$distro_path/data/"*) echo "$path_to_test" ;;
-            *"$distro_path/system/"*) echo "$path_to_test" ;;
-            *"$distro_path/sdcard/"*) echo "$path_to_test" ;;
-            *"$distro_path/dev/pts/"*) echo "$path_to_test" ;;
-            *"$distro_path/proc/"*) echo "$path_to_test" ;;
-            *"$distro_path/sys/"*) echo "$path_to_test" ;;
-            *"$distro_path/dev/"*) echo "$path_to_test" ;;
-            *)
-                # storage check could have been just one line like the above ones but wanted to have only
-                # the cases which prevents the unmount visible
-                echo "$storage_paths" | while read -r storage_path; do
-                    case "$path_to_test" in
-                        *"$storage_path/"*) echo "$path_to_test" ;;
-                        # everything else, ignore
-                        *) ;;
-                    esac
-                done
+        *"$distro_path/data/"*) echo "$path_to_test" ;;
+        *"$distro_path/system/"*) echo "$path_to_test" ;;
+        *"$distro_path/sdcard/"*) echo "$path_to_test" ;;
+        *"$distro_path/dev/pts/"*) echo "$path_to_test" ;;
+        *"$distro_path/proc/"*) echo "$path_to_test" ;;
+        *"$distro_path/sys/"*) echo "$path_to_test" ;;
+        *"$distro_path/dev/"*) echo "$path_to_test" ;;
+        *)
+            # storage check could have been just one line like the above ones but wanted to have only
+            # the cases which prevents the unmount visible
+            echo "$storage_paths" | while read -r storage_path; do
+                case "$path_to_test" in
+                *"$storage_path/"*) echo "$path_to_test" ;;
+                # everything else, ignore
+                *) ;;
+                esac
+            done
             ;;
         esac
     done
@@ -1008,13 +773,13 @@ chroot_distro_unmount_system_point() {
     if [ "yes" = "$force" ]; then
         # first try to kill all processes before trying to unmount anything
         # note: close from earlier to later processes to ensure that no new worker processes are created during killing
-        chroot_distro_find_processes_with_open_files "$mount_point/" | xargs -I {} kill {} > /dev/null 2>&1
+        chroot_distro_find_processes_with_open_files "$mount_point/" | xargs -I {} kill {} >/dev/null 2>&1
         # before normal unmounts, go through all loopback devices
         # note: in reverse order in case there is loopback mount from inside the loopback mount (quite contrived case but just in case...)
-        chroot_distro_find_all_loopback_mount_points "$mount_point/" | sort -r | xargs -I {} umount {} > /dev/null 2>&1
+        chroot_distro_find_all_loopback_mount_points "$mount_point/" | sort -r | xargs -I {} umount {} >/dev/null 2>&1
         # try to unmount everything found
         # note: using reverse sort to ensure that mounts residing deeper in the file system will be unmmounted first
-        chroot_distro_find_all_mount_points "$mount_point/" | sort -r | xargs -I {} umount {} > /dev/null 2>&1
+        chroot_distro_find_all_mount_points "$mount_point/" | sort -r | xargs -I {} umount {} >/dev/null 2>&1
         # then hope for the best...
     fi
     # no need to check for the success as the caller will take care of that
@@ -1064,33 +829,32 @@ chroot_distro_check_if_system_points_mounted() {
     set -- $system_paths
     partial=
     quote="'"
-    while [ $# -gt 0 ]
-    do
+    while [ $# -gt 0 ]; do
         # This case shenanigan is required to ensure that if there is space in the path that the path is constructed properly
         # as we don't use quotes for set parameters. There is still possibility of somebody intentionally using path "/some' /path".
         # In this case the path will be split wrongly but then again there is likely more pressing issues if somebody gets to do that.
         case "$1" in
-            *$quote)
-                if [ "" = "$partial" ]; then
-                    full="$1"
-                else
-                    full="$partial $1"
-                fi
-                partial=
-                # strip quotes, assumes that path is 'some/path', ie. both start and end has quotes
-                full="$(expr "$full" : '.\(.*\).')"
+        *$quote)
+            if [ "" = "$partial" ]; then
+                full="$1"
+            else
+                full="$partial $1"
+            fi
+            partial=
+            # strip quotes, assumes that path is 'some/path', ie. both start and end has quotes
+            full="$(expr "$full" : '.\(.*\).')"
 
-                if chroot_distro_check_if_system_point_mounted "$full"; then
-                    return 0
-                fi
-                ;;
-            *)
-                if [ "" = "$partial" ]; then
-                    partial="$1"
-                else
-                    partial="$partial $1"
-                fi
-                ;;
+            if chroot_distro_check_if_system_point_mounted "$full"; then
+                return 0
+            fi
+            ;;
+        *)
+            if [ "" = "$partial" ]; then
+                partial="$1"
+            else
+                partial="$partial $1"
+            fi
+            ;;
         esac
         shift
     done
@@ -1101,16 +865,16 @@ chroot_distro_check_archive_file_type() {
     archive_path="$1"
 
     # -l option would be more efficient but unfortunately busybox implementation may not support it
-    if gunzip -t "$archive_path" 1>/dev/null 2>&1 ; then
+    if gunzip -t "$archive_path" 1>/dev/null 2>&1; then
         echo "gzip"
         return
     fi
     # -l option would be more efficient but unfortunately busybox implementation may not support it
-    if xz -t "$archive_path" 1>/dev/null 2>&1 ; then
+    if xz -t "$archive_path" 1>/dev/null 2>&1; then
         echo "xz"
         return
     fi
-    if tar -tf "$archive_path" 1>/dev/null 2>&1 ; then
+    if tar -tf "$archive_path" 1>/dev/null 2>&1; then
         # either it is real tar file, or something else which isn't gunzip or xz
         echo "tar"
         return
@@ -1138,7 +902,7 @@ chroot_distro_jail() {
     if [ "" != "$su_command" ]; then
         (
             # try to ensure that su will do as proper login as possible to ensure consistent environment
-            unset PREFIX;
+            unset PREFIX
             if [ "" != "$command" ]; then
                 # shellcheck disable=SC1007
                 PATH= chroot "$distro_path/" "$su_command" - root -c "$command"
@@ -1163,12 +927,12 @@ chroot_distro_jail() {
 
     (
         # try to ensure consistent environment
-        unset HISTFILE;
-        unset TMPDIR;
-        unset PREFIX;
-        unset BOOTCLASSPATH;
-        unset SYSTEMSERVERCLASSPATH;
-        unset LD_LIBRARY_PATH;
+        unset HISTFILE
+        unset TMPDIR
+        unset PREFIX
+        unset BOOTCLASSPATH
+        unset SYSTEMSERVERCLASSPATH
+        unset LD_LIBRARY_PATH
         if [ "" != "$command" ]; then
             SHELL=/bin/sh HOME="$JAIL_HOME" PATH="$JAIL_PATH" chroot "$distro_path/" /bin/sh -lc "$command"
         else
@@ -1198,7 +962,7 @@ chroot_distro_install() {
         exit 1
     fi
 
-    common_path="$( chroot_distro_find_archive_common_path "$archive_path" )"
+    common_path="$(chroot_distro_find_archive_common_path "$archive_path")"
     # shellcheck disable=SC2181
     # we want both the output and error code, so need indirection
     if [ $? -ne 0 ]; then
@@ -1208,7 +972,7 @@ chroot_distro_install() {
     if [ "" = "$common_path" ]; then
         common_path="."
     fi
-    rootdir="$( echo "$common_path" | cut -f1 -d/ )"
+    rootdir="$(echo "$common_path" | cut -f1 -d/)"
     if [ "$rootdir" != "$common_path" ]; then
         echo "Unsupported archive. rootfs archive is expected to have only at most one subdirectory before the actual content."
         exit 1
@@ -1242,8 +1006,8 @@ chroot_distro_install() {
 
     chroot_distro_mount_system_points "$distro_path" "$use_android"
 
-    echo "nameserver 8.8.8.8" > "$distro_path"/etc/resolv.conf
-    echo "127.0.0.1 localhost" > "$distro_path"/etc/hosts
+    echo "nameserver 8.8.8.8" >"$distro_path"/etc/resolv.conf
+    echo "127.0.0.1 localhost" >"$distro_path"/etc/hosts
     chroot "$distro_path" /sbin/groupadd -g 3003 aid_inet 2>/dev/null
     chroot "$distro_path" /sbin/groupadd -g 3004 aid_net_raw 2>/dev/null
     chroot "$distro_path" /sbin/groupadd -g 1003 aid_graphics 2>/dev/null
@@ -1309,13 +1073,13 @@ chroot_distro_uninstall() {
         if [ "yes" = "$force" ]; then
             # first try to kill all processes before trying to unmount anything
             # note: close from earlier to later processes to ensure that no new worker processes are created during killing
-            chroot_distro_find_processes_with_open_files "$distro_path/" | xargs -I {} kill {} > /dev/null 2>&1
+            chroot_distro_find_processes_with_open_files "$distro_path/" | xargs -I {} kill {} >/dev/null 2>&1
             # before normal unmounts, go through all loopback devices
             # note: in reverse order in case there is loopback mount from inside the loopback mount (quite contrived case but just in case...)
-            chroot_distro_find_all_loopback_mount_points "$distro_path/" | sort -r | xargs -I {} umount {} > /dev/null 2>&1
+            chroot_distro_find_all_loopback_mount_points "$distro_path/" | sort -r | xargs -I {} umount {} >/dev/null 2>&1
             # try to unmount everything found
             # note: using reverse sort to ensure that mounts residing deeper in the file system will be unmmounted first
-            chroot_distro_find_all_mount_points "$distro_path/" | sort -r | xargs -I {} umount {} > /dev/null 2>&1
+            chroot_distro_find_all_mount_points "$distro_path/" | sort -r | xargs -I {} umount {} >/dev/null 2>&1
             # then hope for the best...
         fi
         chroot_distro_unmount_system_points "$distro_path" no
@@ -1397,7 +1161,7 @@ chroot_distro_backup() {
             exit 1
         fi
         (
-            cd "$chroot_distro_path" || exit 1;
+            cd "$chroot_distro_path" || exit 1
             tar -caf "$backup_path" "$distro"
         )
         # shellcheck disable=SC2181
@@ -1407,7 +1171,7 @@ chroot_distro_backup() {
         fi
     else
         (
-            cd "$chroot_distro_path" || exit 1;
+            cd "$chroot_distro_path" || exit 1
             tar -caf "$custom_path" "$distro"
         )
         # shellcheck disable=SC2181
@@ -1430,8 +1194,7 @@ chroot_distro_find_archive_common_path() {
     i=1
     prev_path=
 
-    while [ $i -lt 100 ]
-    do
+    while [ $i -lt 100 ]; do
         path=$(echo "$paths_to_check" | cut -f1-"$i" -d/ | uniq -u)
         if [ -z "$path" ]; then
             prev_path=$(echo "$paths_to_check" | cut -f1-"$i" -d/ | uniq)
@@ -1439,7 +1202,7 @@ chroot_distro_find_archive_common_path() {
             echo "$prev_path"
             break
         fi
-        i=$((i+1))
+        i=$((i + 1))
     done
 }
 
@@ -1497,7 +1260,7 @@ chroot_distro_restore() {
     if [ "" = "$common_path" ]; then
         common_path="."
     fi
-    rootdir="$( echo "$common_path" | cut -f1 -d/ )"
+    rootdir="$(echo "$common_path" | cut -f1 -d/)"
 
     archive_type=${archive_type-$(chroot_distro_check_archive_file_type "$backup_path")}
     if [ "" = "$archive_type" ]; then
@@ -1542,7 +1305,7 @@ chroot_distro_restore() {
     elif [ "$distro" = "$rootdir" ]; then
         # new format backups
         (
-            cd "$chroot_distro_path" || exit 1;
+            cd "$chroot_distro_path" || exit 1
             tar -xf "$backup_path"
         )
         # shellcheck disable=SC2181
@@ -1558,8 +1321,8 @@ chroot_distro_restore() {
     chroot_distro_mount_system_points "$distro_path" no
 
     if [ "yes" = "$restore_defaults" ]; then
-        echo "nameserver 8.8.8.8" > "$distro_path"/etc/resolv.conf
-        echo "127.0.0.1 localhost" > "$distro_path"/etc/hosts
+        echo "nameserver 8.8.8.8" >"$distro_path"/etc/resolv.conf
+        echo "127.0.0.1 localhost" >"$distro_path"/etc/hosts
         chroot "$distro_path" /sbin/groupadd -g 3003 aid_inet 2>/dev/null
         chroot "$distro_path" /sbin/groupadd -g 3004 aid_net_raw 2>/dev/null
         chroot "$distro_path" /sbin/groupadd -g 1003 aid_graphics 2>/dev/null
@@ -1591,14 +1354,14 @@ chroot_distro_unmount() {
         if [ "yes" = "$force" ]; then
             # first try to kill all processes before trying to unmount anything
             # note: close from earlier to later processes to ensure that no new worker processes are created during killing
-            chroot_distro_find_processes_with_open_files "$distro_path/" | xargs -I {} kill {} > /dev/null 2>&1
+            chroot_distro_find_processes_with_open_files "$distro_path/" | xargs -I {} kill {} >/dev/null 2>&1
         fi
         # before normal unmounts, go through all loopback devices
         # note: in reverse order in case there is loopback mount from inside the loopback mount (quite contrived case but just in case...)
-        chroot_distro_find_all_loopback_mount_points "$distro_path/" | sort -r | xargs -I {} umount {} > /dev/null 2>&1
+        chroot_distro_find_all_loopback_mount_points "$distro_path/" | sort -r | xargs -I {} umount {} >/dev/null 2>&1
         # try to unmount everything found
         # note: using reverse sort to ensure that mounts residing deeper in the file system will be unmmounted first
-        chroot_distro_find_all_mount_points "$distro_path/" | sort -r | xargs -I {} umount {} > /dev/null 2>&1
+        chroot_distro_find_all_mount_points "$distro_path/" | sort -r | xargs -I {} umount {} >/dev/null 2>&1
     else
         chroot_distro_unmount_system_points "$distro_path" "$force"
     fi
@@ -1692,14 +1455,14 @@ elif [ "$command" = "list" ]; then
     eval set -- "$PARSED"
     while true; do
         case "$1" in
-            --)
-                shift
-                break
-                ;;
-            *)
-                echo "Programming error"
-                exit 3
-                ;;
+        --)
+            shift
+            break
+            ;;
+        *)
+            echo "Programming error"
+            exit 3
+            ;;
         esac
     done
     if [ $# -ne 0 ]; then
@@ -1711,14 +1474,14 @@ elif [ "$command" = "download" ]; then
     eval set -- "$PARSED"
     while true; do
         case "$1" in
-            --)
-                shift
-                break
-                ;;
-            *)
-                echo "Programming error"
-                exit 3
-                ;;
+        --)
+            shift
+            break
+            ;;
+        *)
+            echo "Programming error"
+            exit 3
+            ;;
         esac
     done
     if [ $# -eq 0 ]; then
@@ -1733,14 +1496,14 @@ elif [ "$command" = "redownload" ]; then
     eval set -- "$PARSED"
     while true; do
         case "$1" in
-            --)
-                shift
-                break
-                ;;
-            *)
-                echo "Programming error"
-                exit 3
-                ;;
+        --)
+            shift
+            break
+            ;;
+        *)
+            echo "Programming error"
+            exit 3
+            ;;
         esac
     done
     if [ $# -eq 0 ]; then
@@ -1754,14 +1517,14 @@ elif [ "$command" = "delete" ]; then
     eval set -- "$PARSED"
     while true; do
         case "$1" in
-            --)
-                shift
-                break
-                ;;
-            *)
-                echo "Programming error"
-                exit 3
-                ;;
+        --)
+            shift
+            break
+            ;;
+        *)
+            echo "Programming error"
+            exit 3
+            ;;
         esac
     done
     if [ $# -eq 0 ]; then
@@ -1776,18 +1539,18 @@ elif [ "$command" = "install" ]; then
     android=no
     while true; do
         case "$1" in
-            -a|--android)
-                android=yes
-                shift
-                ;;
-            --)
-                shift
-                break
-                ;;
-            *)
-                echo "Programming error"
-                exit 3
-                ;;
+        -a | --android)
+            android=yes
+            shift
+            ;;
+        --)
+            shift
+            break
+            ;;
+        *)
+            echo "Programming error"
+            exit 3
+            ;;
         esac
     done
     if [ $# -eq 0 ]; then
@@ -1803,18 +1566,18 @@ elif [ "$command" = "uninstall" ]; then
     force=no
     while true; do
         case "$1" in
-            -f|--force)
-                force=yes
-                shift
-                ;;
-            --)
-                shift
-                break
-                ;;
-            *)
-                echo "Programming error"
-                exit 3
-                ;;
+        -f | --force)
+            force=yes
+            shift
+            ;;
+        --)
+            shift
+            break
+            ;;
+        *)
+            echo "Programming error"
+            exit 3
+            ;;
         esac
     done
     if [ $# -eq 0 ]; then
@@ -1831,22 +1594,22 @@ elif [ "$command" = "reinstall" ]; then
     force=no
     while true; do
         case "$1" in
-            -a|--android)
-                android=yes
-                shift
-                ;;
-            -f|--force)
-                force=yes
-                shift
-                ;;
-            --)
-                shift
-                break
-                ;;
-            *)
-                echo "Programming error"
-                exit 3
-                ;;
+        -a | --android)
+            android=yes
+            shift
+            ;;
+        -f | --force)
+            force=yes
+            shift
+            ;;
+        --)
+            shift
+            break
+            ;;
+        *)
+            echo "Programming error"
+            exit 3
+            ;;
         esac
     done
     if [ $# -eq 0 ]; then
@@ -1861,14 +1624,14 @@ elif [ "$command" = "backup" ]; then
     eval set -- "$PARSED"
     while true; do
         case "$1" in
-            --)
-                shift
-                break
-                ;;
-            *)
-                echo "Programming error"
-                exit 3
-                ;;
+        --)
+            shift
+            break
+            ;;
+        *)
+            echo "Programming error"
+            exit 3
+            ;;
         esac
     done
     if [ $# -eq 0 ]; then
@@ -1882,14 +1645,14 @@ elif [ "$command" = "unbackup" ]; then
     eval set -- "$PARSED"
     while true; do
         case "$1" in
-            --)
-                shift
-                break
-                ;;
-            *)
-                echo "Programming error"
-                exit 3
-                ;;
+        --)
+            shift
+            break
+            ;;
+        *)
+            echo "Programming error"
+            exit 3
+            ;;
         esac
     done
     if [ $# -eq 0 ]; then
@@ -1906,22 +1669,22 @@ elif [ "$command" = "restore" ]; then
     force=no
     while true; do
         case "$1" in
-            -d|--default)
-                restore_defaults=yes
-                shift
-                ;;
-            --force)
-                force=yes
-                shift
-                ;;
-            --)
-                shift
-                break
-                ;;
-            *)
-                echo "Programming error"
-                exit 3
-                ;;
+        -d | --default)
+            restore_defaults=yes
+            shift
+            ;;
+        --force)
+            force=yes
+            shift
+            ;;
+        --)
+            shift
+            break
+            ;;
+        *)
+            echo "Programming error"
+            exit 3
+            ;;
         esac
     done
     if [ $# -eq 0 ]; then
@@ -1935,14 +1698,14 @@ elif [ "$command" = "command" ]; then
     eval set -- "$PARSED"
     while true; do
         case "$1" in
-            --)
-                shift
-                break
-                ;;
-            *)
-                echo "Programming error"
-                exit 3
-                ;;
+        --)
+            shift
+            break
+            ;;
+        *)
+            echo "Programming error"
+            exit 3
+            ;;
         esac
     done
     if [ $# -eq 0 ]; then
@@ -1958,14 +1721,14 @@ elif [ "$command" = "login" ]; then
     eval set -- "$PARSED"
     while true; do
         case "$1" in
-            --)
-                shift
-                break
-                ;;
-            *)
-                echo "Programming error"
-                exit 3
-                ;;
+        --)
+            shift
+            break
+            ;;
+        *)
+            echo "Programming error"
+            exit 3
+            ;;
         esac
     done
     if [ $# -eq 0 ]; then
@@ -1981,22 +1744,22 @@ elif [ "$command" = "unmount" ]; then
     all=no
     while true; do
         case "$1" in
-            -f|--force)
-                force=yes
-                shift
-                ;;
-            -a|--all)
-                all=yes
-                shift
-                ;;
-            --)
-                shift
-                break
-                ;;
-            *)
-                echo "Programming error"
-                exit 3
-                ;;
+        -f | --force)
+            force=yes
+            shift
+            ;;
+        -a | --all)
+            all=yes
+            shift
+            ;;
+        --)
+            shift
+            break
+            ;;
+        *)
+            echo "Programming error"
+            exit 3
+            ;;
         esac
     done
     if [ $# -eq 0 ]; then
